@@ -1,0 +1,33 @@
+
+load('D:/Medicine/Y3/researchprojectstuff/5. sim/params_sim.mat')
+params_train = [params_sim];
+
+f = @(p,x) cos(p(1))^2*Ball(3E-9,x)+(1-cos(p(1))^2).*(cos(p(2))^2.*Sphere(p(4:5),x)+(1-cos(p(2))^2)*cos(p(3))^2*Zeppelin([p(6) p(7)*p(6) p(8) p(9)],x)+(1-cos(p(2))^2)*(1-cos(p(3))^2)*AstroSticks(p(10),x));
+load('D:/Medicine/Y3/researchprojectstuff/patientdataforverdict/outputfolder/models/normS0T2_fixDv40_V/model.mat')
+%you have to be in the model folder
+load('model.mat','model')
+protocol=model.protocol;
+
+
+
+database = zeros(size(params_train,1), numel(protocol.G));
+parfor i=1:size(params_train,1)
+database(i,:)=f(params_train(i,:),protocol);
+end
+
+
+SNR=model.SNR;
+database_noisy = database + 1./SNR.*randn(size(database));
+
+
+training_folder = 'D:/Medicine/Y3/researchprojectstuff/patientdataforverdict/outputfolder/models/normS0T2_fixDv40_V/';
+
+trainedDLname = [training_folder '/DLtrained'];
+
+mkdir('D:/Medicine/Y3/researchprojectstuff/patientdataforverdict/outputfolder/sim_test/normS0T2_fixDv40_V/');
+pythonpath = 'python';
+mpgMean=apply_DL_python(database_noisy,'VERDICT_brain', trainedDLname, pythonpath, 'D:/Medicine/Y3/researchprojectstuff/patientdataforverdict/outputfolder/sim_test/normS0T2_fixDv40_V' , training_folder);
+
+output_pars=zeros(size(mpgMean));output_pars(:,1) = cos(mpgMean(:,1)).^2;output_pars(:,2) = (1-cos(mpgMean(:,1)).^2).*cos(mpgMean(:,2)).^2;output_pars(:,3) = (1-cos(mpgMean(:,1)).^2).*(1-cos(mpgMean(:,2)).^2).*cos(mpgMean(:,3)).^2;output_pars(:,4:end) = mpgMean(:,4:end); input_pars=zeros(size(params_train));input_pars(:,1) = cos(params_train(:,1)).^2;input_pars(:,2) = (1-cos(params_train(:,1)).^2).*cos(params_train(:,2)).^2;input_pars(:,3) = (1-cos(params_train(:,1)).^2).*(1-cos(params_train(:,2)).^2).*cos(params_train(:,3)).^2;input_pars(:,4:end) = params_train(:,4:end);
+
+error = abs(input_parsdv-output_pars);
