@@ -1,4 +1,4 @@
-The code we used to generate the simulated data and then applied the deep learning models to, can be found in the 'Simulated Data Code' file.
+We generated simulated MRI data and then applied the deep learning models to them. This be found in the 'Simulated Data Code' file.
 
 We define the ground truth data for the deep learning models as 'params_sim'.
 
